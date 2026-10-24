@@ -55,8 +55,14 @@ export default function Cursor() {
     };
 
     const tick = () => {
+      // Nothing to move once the ring has caught up with the pointer.
+      if (Math.abs(target.x - ring.x) < 0.1 && Math.abs(target.y - ring.y) < 0.1 && ring.settled) {
+        frame = requestAnimationFrame(tick);
+        return;
+      }
       ring.x += (target.x - ring.x) * 0.16;
       ring.y += (target.y - ring.y) * 0.16;
+      ring.settled = Math.abs(target.x - ring.x) < 0.1 && Math.abs(target.y - ring.y) < 0.1;
       if (dotRef.current) dotRef.current.style.transform = `translate3d(${target.x}px, ${target.y}px, 0)`;
       if (ringRef.current) ringRef.current.style.transform = `translate3d(${ring.x}px, ${ring.y}px, 0)`;
       if (tintRef.current) tintRef.current.style.transform = `translate3d(${ring.x}px, ${ring.y}px, 0)`;

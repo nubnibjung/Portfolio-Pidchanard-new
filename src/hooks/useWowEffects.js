@@ -7,17 +7,25 @@ import { engageHyperdrive } from '../webgl/scrollState.js';
 export function useWowEffects() {
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
-    const root = document.documentElement;
     let lastY = window.scrollY;
     let skew = 0;
+    let written = '';
     let frame = 0;
 
+    // Set --skew only on the elements that lean (not on <html>, which would restyle the whole
+    // page every frame), and only when the value actually changes.
+    const leaners = () => document.querySelectorAll('.marquee-wrap, .section-title');
     const tick = () => {
       const y = window.scrollY;
       const target = Math.max(-8, Math.min(8, (y - lastY) * 0.35));
       lastY = y;
       skew += (target - skew) * 0.12;
-      root.style.setProperty('--skew', `${skew.toFixed(2)}deg`);
+      if (Math.abs(skew) < 0.01) skew = 0;
+      const value = `${skew.toFixed(2)}deg`;
+      if (value !== written) {
+        written = value;
+        leaners().forEach((el) => el.style.setProperty('--skew', value));
+      }
       frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
@@ -31,7 +39,7 @@ export function useWowEffects() {
     return () => {
       cancelAnimationFrame(frame);
       document.removeEventListener('click', onClick);
-      root.style.removeProperty('--skew');
+      leaners().forEach((el) => el.style.removeProperty('--skew'));
     };
   }, []);
 }

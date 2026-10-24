@@ -166,6 +166,16 @@ function buildShapes(count) {
   const golden = Math.PI * (3 - Math.sqrt(5));
   const columns = Math.ceil(Math.sqrt(count * 1.8));
   const rows = Math.ceil(count / columns);
+  // Start on the attractor itself: run past the initial transient before sampling.
+  const lorenz = { x: 0.1, y: 0, z: 0 };
+  for (let s = 0; s < 2000; s += 1) {
+    const dx = 10 * (lorenz.y - lorenz.x);
+    const dy = lorenz.x * (28 - lorenz.z) - lorenz.y;
+    const dz = lorenz.x * lorenz.y - (8 / 3) * lorenz.z;
+    lorenz.x += dx * 0.004;
+    lorenz.y += dy * 0.004;
+    lorenz.z += dz * 0.004;
+  }
 
   for (let i = 0; i < count; i += 1) {
     const k = i * 3;
@@ -193,22 +203,18 @@ function buildShapes(count) {
     wave[k + 1] = -1.1;
     wave[k + 2] = (Math.floor(i / columns) / rows - 0.5) * 6;
 
-    // Double helix with rungs.
-    const strand = i % 3;
-    const along = (i / count) * 2 - 1;
-    if (strand < 2) {
-      const angle = along * Math.PI * 5 + strand * Math.PI;
-      helix[k] = along * 6.5 + (Math.random() - 0.5) * 0.08;
-      helix[k + 1] = Math.cos(angle) * 1.05 + (Math.random() - 0.5) * 0.12;
-      helix[k + 2] = Math.sin(angle) * 1.05 + (Math.random() - 0.5) * 0.12;
-    } else {
-      const rung = Math.round(along * 40) / 40;
-      const angle = rung * Math.PI * 5;
-      const span = Math.random() * 2 - 1;
-      helix[k] = rung * 6.5;
-      helix[k + 1] = Math.cos(angle) * 1.05 * span;
-      helix[k + 2] = Math.sin(angle) * 1.05 * span;
+    // Lorenz attractor: particles laid along one long trajectory, tracing the two "butterfly wings".
+    for (let s = 0; s < 3; s += 1) {
+      const dx = 10 * (lorenz.y - lorenz.x);
+      const dy = lorenz.x * (28 - lorenz.z) - lorenz.y;
+      const dz = lorenz.x * lorenz.y - (8 / 3) * lorenz.z;
+      lorenz.x += dx * 0.004;
+      lorenz.y += dy * 0.004;
+      lorenz.z += dz * 0.004;
     }
+    helix[k] = lorenz.x * 0.11 + (Math.random() - 0.5) * 0.04;
+    helix[k + 1] = (lorenz.z - 24) * 0.11 + (Math.random() - 0.5) * 0.04;
+    helix[k + 2] = lorenz.y * 0.11 + (Math.random() - 0.5) * 0.04;
 
     // Three-armed spiral galaxy.
     const dist = 4.2 * Math.pow(Math.random(), 1.6) + 0.05;
@@ -218,22 +224,13 @@ function buildShapes(count) {
     galaxy[k + 1] = (Math.random() - 0.5) * 0.25 * (4.5 - dist) * 0.25;
     galaxy[k + 2] = Math.sin(arm) * dist + scatter * 0.6;
 
-    // Two nested wireframe cubes: particles sit on the 12 edges, the inner cube is turned 45deg.
-    const inner = i % 4 === 0;
-    const half = inner ? 0.95 : 1.75;
-    const edge = Math.floor(Math.random() * 12);
-    const alongEdge = (Math.random() * 2 - 1) * half;
-    const c1 = (edge & 1 ? 1 : -1) * half;
-    const c2 = (edge & 2 ? 1 : -1) * half;
-    let cx = c1;
-    let cy = c2;
-    let cz = alongEdge;
-    if (edge < 4) [cx, cy, cz] = [alongEdge, c1, c2];
-    else if (edge < 8) [cx, cy, cz] = [c1, alongEdge, c2];
-    if (inner) [cx, cz] = [(cx - cz) * Math.SQRT1_2, (cx + cz) * Math.SQRT1_2];
-    cube[k] = cx + (Math.random() - 0.5) * 0.05;
-    cube[k + 1] = cy + (Math.random() - 0.5) * 0.05;
-    cube[k + 2] = cz + (Math.random() - 0.5) * 0.05;
+    // Möbius strip drawn as fine strands running along its length, so the half-twist reads clearly.
+    const mu = Math.random() * Math.PI * 2;
+    const mv = ((i % 11) / 10 - 0.5) * 1.4 + (Math.random() - 0.5) * 0.03;
+    const mr = 2 + mv * Math.cos(mu / 2);
+    cube[k] = mr * Math.cos(mu);
+    cube[k + 1] = mv * Math.sin(mu / 2);
+    cube[k + 2] = mr * Math.sin(mu);
 
     // Saturn: a planet (a third of the particles) wrapped in a flat, banded ring.
     if (i % 3 === 0) {

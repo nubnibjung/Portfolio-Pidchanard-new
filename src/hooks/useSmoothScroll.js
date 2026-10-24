@@ -10,6 +10,16 @@ export function scrollToTarget(target) {
   else element.scrollIntoView({ behavior: 'smooth' });
 }
 
+// Where the page is headed (Lenis' target while it glides, else the real scroll position).
+export function getScrollTarget() {
+  return lenis ? lenis.targetScroll : window.scrollY;
+}
+
+export function scrollToY(y, { instant = false } = {}) {
+  if (lenis) lenis.scrollTo(y);
+  else window.scrollTo({ top: y, behavior: instant ? 'auto' : 'smooth' });
+}
+
 // Freeze page scrolling while an overlay (e.g. the terminal) is open.
 export function setScrollLocked(locked) {
   document.documentElement.classList.toggle('scroll-locked', locked);

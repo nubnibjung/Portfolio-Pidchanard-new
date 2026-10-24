@@ -3,7 +3,7 @@ export const profile = {
   name: 'Pidchanard',
   surname: 'Mueanson',
   role: 'Frontend Developer',
-  currentPosition: 'Frontend Developer - Lodash Thailand',
+  currentPosition: 'Frontend Developer @Lodash Thailand',
   photoUrl: '/profile-congraduation.jpg',
   resumeUrl: '/CV_%E0%B8%9E%E0%B8%B4%E0%B8%8A%E0%B8%8D%E0%B9%8C%E0%B8%99%E0%B8%B2%E0%B8%8F%20%E0%B9%80%E0%B8%AB%E0%B8%A1%E0%B8%B7%E0%B8%AD%E0%B8%99%E0%B8%AA%E0%B8%99%E0%B8%98%E0%B8%B4%E0%B9%8C.pdf',
   resumeFileName: 'Pidchanard-Mueanson-CV.pdf',

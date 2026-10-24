@@ -16,15 +16,31 @@ export function engageHyperdrive(durationMs = 9000) {
 // Sections that drive the particle morph, in order. Each one maps to a shape stage.
 export const stageSections = ['hero', 'about', 'experience', 'skills', 'projects', 'achievements', 'contact'];
 
-export function readStageProgress() {
-  const anchor = window.scrollY + window.innerHeight * 0.35;
-  const tops = [];
+// Section tops are cached: measuring them every frame forces a layout on every frame.
+// They are re-measured whenever the page's size changes.
+let cachedTops = null;
+let observer = null;
 
+function measureTops() {
+  const tops = [];
   for (const id of stageSections) {
     const element = document.getElementById(id);
-    if (!element) return scrollState.progress;
+    if (!element) return null;
     tops.push(element.getBoundingClientRect().top + window.scrollY);
   }
+  return tops;
+}
+
+export function readStageProgress() {
+  if (!observer && typeof ResizeObserver !== 'undefined') {
+    observer = new ResizeObserver(() => { cachedTops = null; });
+    observer.observe(document.body);
+    window.addEventListener('resize', () => { cachedTops = null; });
+  }
+  if (!cachedTops) cachedTops = measureTops();
+  const tops = cachedTops;
+  if (!tops) return scrollState.progress;
+  const anchor = window.scrollY + window.innerHeight * 0.35;
 
   if (anchor <= tops[0]) return 0;
 

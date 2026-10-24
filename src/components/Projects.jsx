@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { projects } from '../data/portfolio.js';
 import SectionHeader from './SectionHeader.jsx';
+import { getScrollTarget, scrollToY } from '../hooks/useSmoothScroll.js';
 
 const DESKTOP = '(min-width: 1024px)';
 
@@ -17,6 +18,7 @@ export default function Projects() {
     const media = window.matchMedia(DESKTOP);
     let distance = 0;
     let frame = 0;
+    const pinTop = () => pin.getBoundingClientRect().top + window.scrollY;
 
     const measure = () => {
       if (!media.matches) {
@@ -49,6 +51,45 @@ export default function Projects() {
     };
     track.addEventListener('scroll', onScroll, { passive: true });
 
+    // Desktop: sideways trackpad swipes / shift+wheel move the page like vertical scroll does.
+    const onWheel = (event) => {
+      if (!media.matches || Math.abs(event.deltaX) <= Math.abs(event.deltaY)) return;
+      const position = getScrollTarget() - pinTop();
+      // Let the gesture pass through once the row is already at that end.
+      if ((event.deltaX < 0 && position <= 0) || (event.deltaX > 0 && position >= distance)) return;
+      event.preventDefault();
+      scrollToY(getScrollTarget() + event.deltaX, { instant: true });
+    };
+    track.addEventListener('wheel', onWheel, { passive: false });
+
+    // Desktop: drag the row with the mouse.
+    let drag = null;
+    const onPointerDown = (event) => {
+      if (!media.matches || event.pointerType !== 'mouse' || event.button !== 0) return;
+      drag = { x: event.clientX, start: getScrollTarget(), moved: false };
+    };
+    const onPointerMove = (event) => {
+      if (!drag) return;
+      const dx = event.clientX - drag.x;
+      if (!drag.moved && Math.abs(dx) < 6) return;
+      drag.moved = true;
+      track.classList.add('is-dragging');
+      const top = pinTop();
+      scrollToY(Math.min(top + distance, Math.max(top, drag.start - dx * 1.4)), { instant: true });
+    };
+    const onPointerUp = () => {
+      if (!drag) return;
+      track.classList.remove('is-dragging');
+      // Swallow the click that ends a drag so it doesn't open a project.
+      if (drag.moved) window.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); }, { capture: true, once: true });
+      drag = null;
+    };
+    const onDragStart = (event) => event.preventDefault();
+    track.addEventListener('pointerdown', onPointerDown);
+    track.addEventListener('dragstart', onDragStart);
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
+
     measure();
     document.fonts?.ready.then(measure);
     const resizeObserver = new ResizeObserver(measure);
@@ -63,9 +104,32 @@ export default function Projects() {
       window.removeEventListener('resize', measure);
       window.removeEventListener('scroll', onScroll);
       track.removeEventListener('scroll', onScroll);
+      track.removeEventListener('wheel', onWheel);
+      track.removeEventListener('pointerdown', onPointerDown);
+      track.removeEventListener('dragstart', onDragStart);
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
       media.removeEventListener('change', measure);
     };
   }, []);
+
+  // Prev/next buttons: glide until the neighbouring card is centred on screen.
+  const step = (direction) => {
+    const pin = pinRef.current;
+    const track = trackRef.current;
+    const top = pin.getBoundingClientRect().top + window.scrollY;
+    const distance = Math.max(0, track.scrollWidth - window.innerWidth);
+    const trackLeft = track.getBoundingClientRect().left;
+    const stops = [0, ...[...track.querySelectorAll('.pcard')].map((card) => {
+      const rect = card.getBoundingClientRect();
+      return Math.min(distance, Math.max(0, rect.left - trackLeft + rect.width / 2 - window.innerWidth / 2));
+    })];
+    const position = getScrollTarget() - top;
+    const next = direction > 0
+      ? stops.find((stop) => stop > position + 4) ?? distance
+      : stops.findLast((stop) => stop < position - 4) ?? 0;
+    scrollToY(top + next);
+  };
 
   return (
     <section className="section projects" id="projects">
@@ -75,14 +139,14 @@ export default function Projects() {
 
       <div className="projects-pin" ref={pinRef}>
         <div className="projects-sticky">
-          <div className="projects-track" ref={trackRef}>
+          <div className="projects-track" ref={trackRef} data-cursor="drag" data-cursor-label="Drag">
             <div className="projects-intro">
               <p>
                 From coursework to side projects: video editing, online shops and booking systems,
                 each built end to end.
               </p>
               <span className="projects-hint">
-                <span className="only-pointer">Keep scrolling →</span>
+                <span className="only-pointer">Scroll or drag →</span>
                 <span className="only-touch">Swipe →</span>
               </span>
             </div>
@@ -93,6 +157,10 @@ export default function Projects() {
           <div className="container projects-progress" aria-hidden="true">
             <div className="projects-progress-track">
               <span ref={barRef} />
+            </div>
+            <div className="projects-nav">
+              <button type="button" onClick={() => step(-1)} aria-label="Previous project">←</button>
+              <button type="button" onClick={() => step(1)} aria-label="Next project">→</button>
             </div>
           </div>
         </div>
