@@ -5,9 +5,10 @@ export function useActiveSection(sectionIds) {
 
   useEffect(() => {
     const updateActiveSection = () => {
+      const marker = window.scrollY + window.innerHeight * 0.45;
       const currentSection = [...sectionIds].reverse().find((id) => {
         const section = document.getElementById(id);
-        return section && window.scrollY >= section.offsetTop - 120;
+        return section && marker >= section.offsetTop;
       });
 
       setActiveSection(currentSection || '');

@@ -5,16 +5,16 @@ export default function Achievements() {
   return (
     <section className="section" id="achievements">
       <div className="container">
-        <SectionHeader label="06. Achievements" title="Achievements" />
-        <div className="achievement-grid">
+        <SectionHeader number="05" label="Competitions & learning" title="Milestones" />
+        <div className="award-list">
           {achievements.map((achievement) => (
-            <article className="achievement-card reveal" key={achievement.title}>
-              <div className="achievement-meta">
-                <span>{achievement.date}</span>
-                <span>{achievement.location}</span>
+            <article className="award-item reveal" key={achievement.title}>
+              <span className="award-date">{achievement.date}</span>
+              <div className="award-main">
+                <h3>{achievement.title}</h3>
+                <p>{achievement.description}</p>
               </div>
-              <h3>{achievement.title}</h3>
-              <p>{achievement.description}</p>
+              <span className="award-location">{achievement.location}</span>
             </article>
           ))}
         </div>

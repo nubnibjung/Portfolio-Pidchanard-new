@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 
 export function useRevealOnScroll() {
   useEffect(() => {
-    const elements = document.querySelectorAll('.reveal');
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry, index) => {
@@ -17,8 +16,18 @@ export function useRevealOnScroll() {
       { threshold: 0.12, rootMargin: '0px 0px -40px 0px' },
     );
 
-    elements.forEach((element) => observer.observe(element));
+    const observeAll = () => {
+      document.querySelectorAll('.reveal:not(.visible)').forEach((element) => observer.observe(element));
+    };
+    observeAll();
 
-    return () => observer.disconnect();
+    // Pick up .reveal elements mounted later (re-renders, hot reload) so they don't stay hidden.
+    const mutations = new MutationObserver(observeAll);
+    mutations.observe(document.body, { childList: true, subtree: true });
+
+    return () => {
+      observer.disconnect();
+      mutations.disconnect();
+    };
   }, []);
 }

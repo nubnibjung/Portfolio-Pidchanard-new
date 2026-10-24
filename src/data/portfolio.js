@@ -1,8 +1,10 @@
 export const profile = {
   initials: 'PM',
   name: 'Pidchanard',
-  role: 'Full-Stack Developer',
-  photoUrl: '/profile-picture.jpg',
+  surname: 'Mueanson',
+  role: 'Frontend Developer',
+  currentPosition: 'Frontend Developer - Lodash Thailand',
+  photoUrl: '/profile-congraduation.jpg',
   resumeUrl: '/CV_%E0%B8%9E%E0%B8%B4%E0%B8%8A%E0%B8%8D%E0%B9%8C%E0%B8%99%E0%B8%B2%E0%B8%8F%20%E0%B9%80%E0%B8%AB%E0%B8%A1%E0%B8%B7%E0%B8%AD%E0%B8%99%E0%B8%AA%E0%B8%99%E0%B8%98%E0%B8%B4%E0%B9%8C.pdf',
   resumeFileName: 'Pidchanard-Mueanson-CV.pdf',
   email: 'pidchanard.m@gmail.com',
@@ -16,73 +18,88 @@ export const profile = {
 
 export const navigationItems = [
   { href: '#about', label: 'About' },
-  { href: '#experience', label: 'Experience' },
-  { href: '#education', label: 'Education' },
-  { href: '#skills', label: 'Skills' },
+  { href: '#experience', label: 'Work' },
+  { href: '#skills', label: 'Stack' },
   { href: '#projects', label: 'Projects' },
-  { href: '#achievements', label: 'Achievements' },
-  { href: '#contact', label: 'Resume' },
+  { href: '#achievements', label: 'Awards' },
+  { href: '#contact', label: 'Contact' },
 ];
 
 export const roles = [
   'Full-Stack Developer',
+  'Junior Frontend Developer',
   'Internship Developer',
-  'Angular Developer',
   'Android Developer',
 ];
 
 export const stats = [
   { value: '1', label: 'Year internship experience' },
   { value: '4', label: 'Featured CV projects' },
-  { value: 'IT Graduate', label: 'Information Technology' },
+  { value: '3.36', label: 'GPA at Kasetsart University' },
+  { value: 'IT', label: 'B.Sc. Information Technology graduate' },
 ];
 
 export const skills = [
   {
-    title: 'Skills',
-    items: [
-      'HTML',
-      'CSS',
-      'Tailwind CSS',
-      'Angular',
-      'Flutter',
-      'C++',
-      'Node.js',
-      'Python',
-      '.NET',
-      'Kotlin',
-      'Micro Frontend',
-      'Component-Based Architecture',
-      'MSSQL',
-      'MySQL',
-      'Angular Signals',
-      'RxJS',
-      'Jira',
-      'Figma',
-      'Git',
-      'Postman',
-      'Swagger',
-      'VS Code',
-      'Rust',
-      'PostgreSQL',
-      'Docker',
-    ],
+    title: 'Languages',
+    items: ['Go', 'Rust', 'HTML', 'CSS', 'Kotlin', 'Python', 'C++'],
+  },
+  {
+    title: 'Frontend',
+    items: ['React', 'Angular', 'Tailwind CSS', 'Angular Signals', 'RxJS', 'Flutter', 'Micro Frontend', 'Component-Based Architecture'],
+  },
+  {
+    title: 'Backend',
+    items: ['.NET', 'Node.js'],
+  },
+  {
+    title: 'Databases',
+    items: ['MSSQL', 'MySQL', 'PostgreSQL'],
+  },
+  {
+    title: 'Tools & DevOps',
+    items: ['Git', 'Docker', 'Jira', 'Figma', 'Postman', 'Swagger', 'VS Code'],
   },
 ];
 
 export const experiences = [
   {
+    title: 'Frontend Developer',
+    company: 'Lodash Thailand',
+    logo: '/logos/lodash.jpg',
+    logoFit: 'cover', // the logo has its own dark background, so fill the tile
+    color: '#1f1430',
+    date: 'Aug 2026 - Present',
+    type: 'Full-time',
+    location: 'Bangkok, Thailand',
+    current: true,
+    description:
+      'Building web product features with React, working alongside Go and Rust services in Docker.',
+    // Wrap a phrase in **double asterisks** to highlight it.
+    highlights: [
+      'Build and ship user-facing features with **React**, turning designs into responsive, accessible interfaces.',
+      'Work across the stack with services written in **Go** and **Rust**, integrating the frontend with their APIs.',
+      'Run and test the full system locally with **Docker**, keeping development close to production.',
+    ],
+    tags: ['React', 'TypeScript', 'Go', 'Rust', 'Docker'],
+  },
+  {
     title: 'Internship Developer',
     company: 'Gofive',
+    companyUrl: 'https://www.gofive.co.th/',
+    logo: '/logos/gofive.png',
+    color: '#ffffff',
     date: 'Apr 2025 - Apr 2026',
-    type: 'Intern',
+    type: 'Internship',
+    location: 'Bangkok, Thailand',
     description:
       'Enhanced CRM and e-commerce platforms using Angular and Tailwind CSS in an Agile team.',
+    // Wrap a phrase in **double asterisks** to highlight it.
     highlights: [
-      'Collaborated in an Agile (Scrum) team to enhance CRM and e-commerce platforms using Angular and Tailwind CSS.',
-      'Improved user experience by implementing Dark Mode, resolving UI jitter, and integrating interactive feedback components.',
+      'Collaborated in an **Agile (Scrum)** team to enhance **CRM and e-commerce platforms** using Angular and Tailwind CSS.',
+      'Improved user experience by implementing **Dark Mode**, resolving UI jitter, and integrating interactive feedback components.',
       'Optimized system reliability by fixing complex rendering bugs, data validation logic, and HTML formatting issues.',
-      'Executed system migration of legacy components to a Micro Frontend architecture aligned with modern Design System and Clean Code principles.',
+      'Executed system migration of legacy components to a **Micro Frontend** architecture aligned with modern Design System and Clean Code principles.',
     ],
     tags: ['Angular', 'Tailwind CSS', 'RxJS', 'Angular Signals', 'Micro Frontend'],
   },
@@ -99,6 +116,9 @@ export const projects = [
   {
     title: 'CloudCut',
     year: '2026',
+    tagline: 'Video editing in the browser',
+    cover: '/projects/cloudcut.jpg',
+    color: '#2dd4bf',
     description:
       'A web-based video editing platform that lets users create video projects and add images, video clips, and audio assets to their edits.',
     tech: ['Rust', 'PostgreSQL', 'Docker', 'React'],
@@ -110,6 +130,9 @@ export const projects = [
   {
     title: 'ScoopHub',
     year: '2025',
+    tagline: 'An ice cream shop, online',
+    cover: '/projects/scoophub.jpg',
+    color: '#f472b6',
     description:
       'A complete online ice cream shop with dynamic product catalog, shopping cart, order tracking, inventory control, user account management, and secure transaction records.',
     tech: ['PHP', 'MySQL', 'E-commerce'],
@@ -121,6 +144,9 @@ export const projects = [
   {
     title: 'VillaReserve',
     year: '2024',
+    tagline: 'Clubhouse booking without clashes',
+    cover: '/projects/villareserve.jpg',
+    color: '#34d399',
     description:
       'A village facility booking system for housing estates with real-time scheduling, automated conflict resolution to prevent double bookings, and an administrative dashboard for monitoring usage quotas and approving requests.',
     tech: ['Angular', '.NET', 'SQL Server'],
@@ -132,6 +158,9 @@ export const projects = [
   {
     title: 'Namkub',
     year: '2023',
+    tagline: 'Drinking water, delivered',
+    cover: '/projects/namkub.jpg',
+    color: '#60a5fa',
     description:
       'A water distribution and e-commerce platform built with Angular and Node.js (Express), featuring a responsive product catalog, real-time shopping cart management, multi-step checkout workflow, Reactive Forms validation, and RESTful API integration.',
     tech: ['Angular', 'Node.js', 'Express', 'MSSQL', 'Reactive Forms', 'REST API'],

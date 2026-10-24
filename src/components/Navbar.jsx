@@ -1,122 +1,119 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { navigationItems, profile } from '../data/portfolio.js';
 import { useActiveSection } from '../hooks/useActiveSection.js';
-import { useScrolled } from '../hooks/useScrolled.js';
+import { openTerminal } from './Terminal.jsx';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [theme, setTheme] = useState(getInitialTheme);
-  const sectionIds = useMemo(() => navigationItems.map((item) => item.href.replace('#', '')), []);
+  const [isHidden, setIsHidden] = useState(false);
+  const sectionIds = useMemo(() => navigationItems.map((item) => item.href.slice(1)), []);
   const activeSection = useActiveSection(sectionIds);
-  const isScrolled = useScrolled();
-  const isDarkTheme = theme === 'dark';
-
-  const closeMenu = () => setIsMenuOpen(false);
-  const toggleTheme = () => setTheme((currentTheme) => (currentTheme === 'dark' ? 'light' : 'dark'));
+  const progressRef = useRef(null);
+  const time = useBangkokTime();
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    localStorage.setItem('theme', theme);
-  }, [theme]);
+    let lastY = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      setIsHidden(y > 200 && y > lastY);
+      lastY = y;
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      progressRef.current?.style.setProperty('transform', `scaleX(${max > 0 ? y / max : 0})`);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('menu-open', isMenuOpen);
+  }, [isMenuOpen]);
+
+  const closeMenu = () => setIsMenuOpen(false);
 
   return (
-    <nav className={`nav ${isScrolled ? 'scrolled' : ''}`}>
-      <div className="nav-inner">
-        <a href="#hero" className="nav-logo" onClick={closeMenu}>
-          {profile.initials}.
-        </a>
+    <>
+      <div className="scroll-progress" ref={progressRef} />
+      <header className={`nav ${isHidden && !isMenuOpen ? 'is-hidden' : ''}`}>
+        <div className="container nav-inner">
+          <a href="#hero" className="nav-brand" aria-label="Home" onClick={closeMenu}>
+            <span className="nav-badge">
+              <span className="nav-badge-text">{profile.initials}</span>
+              <span className="nav-badge-alt">:)</span>
+            </span>
+            <span className="nav-brand-text">
+              <span>{profile.name} {profile.surname}</span>
+              <span className="nav-brand-role">{profile.role}</span>
+            </span>
+          </a>
 
-        <div className="nav-desktop">
-          <NavLinks activeSection={activeSection} />
-          <ThemeToggle isDarkTheme={isDarkTheme} onClick={toggleTheme} />
-        </div>
+          <nav className="nav-pill glass" aria-label="Sections">
+            {navigationItems.map((item) => (
+              <a key={item.href} href={item.href} className={activeSection === item.href.slice(1) ? 'is-active' : ''}>
+                {item.label}
+              </a>
+            ))}
+          </nav>
 
-        <button
-          className={`menu-btn ${isMenuOpen ? 'open' : ''}`}
-          type="button"
-          aria-label="Toggle menu"
-          aria-expanded={isMenuOpen}
-          onClick={() => setIsMenuOpen((current) => !current)}
-        >
-          <span />
-          <span />
-          <span />
-        </button>
-      </div>
-
-      <div className={`nav-mobile ${isMenuOpen ? 'open' : ''}`}>
-        <NavLinks activeSection={activeSection} className="nav-mobile-links" onClick={closeMenu} />
-        <ThemeToggle isDarkTheme={isDarkTheme} onClick={toggleTheme} />
-      </div>
-    </nav>
-  );
-}
-
-function NavLinks({ activeSection, className = 'nav-links', onClick }) {
-  return (
-    <ul className={className}>
-      {navigationItems.map((item) => {
-        const isResumeLink = item.href === '#contact';
-        const isActive = item.href === `#${activeSection}`;
-        const linkClassName = [isActive ? 'active' : '', isResumeLink && className === 'nav-links' ? 'btn-nav' : '']
-          .filter(Boolean)
-          .join(' ');
-
-        return (
-          <li key={item.href}>
-            <a
-              href={isResumeLink ? profile.resumeUrl : item.href}
-              className={linkClassName}
-              download={isResumeLink ? profile.resumeFileName : undefined}
-              onClick={onClick}
-            >
-              {item.label}
+          <div className="nav-actions">
+            <span className="nav-clock">
+              <span className="live-dot" />
+              BKK {time}
+            </span>
+            <button type="button" className="nav-terminal glass" onClick={openTerminal} aria-label="Open terminal" data-cursor-label=">_">
+              <span>&gt;_</span>
+              <kbd>⌘K</kbd>
+            </button>
+            <a href={profile.resumeUrl} download={profile.resumeFileName} className="nav-resume glass" data-cursor-label="CV">
+              Resume ↓
             </a>
-          </li>
-        );
-      })}
-    </ul>
+            <button
+              className={`nav-menu-btn glass ${isMenuOpen ? 'is-open' : ''}`}
+              type="button"
+              aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={isMenuOpen}
+              onClick={() => setIsMenuOpen((open) => !open)}
+            >
+              <span />
+              <span />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div className={`mobile-menu ${isMenuOpen ? 'is-open' : ''}`} aria-hidden={!isMenuOpen}>
+        <ul>
+          {navigationItems.map((item, index) => (
+            <li key={item.href} style={{ transitionDelay: isMenuOpen ? `${0.15 + index * 0.05}s` : '0s' }}>
+              <a href={item.href} onClick={closeMenu} tabIndex={isMenuOpen ? 0 : -1}>
+                <span>0{index + 1}</span>
+                {item.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+        <div className="mobile-menu-links">
+          <a href={profile.githubUrl} target="_blank" rel="noreferrer" tabIndex={isMenuOpen ? 0 : -1}>GitHub ↗</a>
+          <a href={profile.linkedinUrl} target="_blank" rel="noreferrer" tabIndex={isMenuOpen ? 0 : -1}>LinkedIn ↗</a>
+          <a href={profile.resumeUrl} download={profile.resumeFileName} tabIndex={isMenuOpen ? 0 : -1}>Resume ↓</a>
+        </div>
+      </div>
+    </>
   );
 }
 
-function ThemeToggle({ isDarkTheme, onClick }) {
-  return (
-    <button
-      className="theme-toggle"
-      type="button"
-      aria-label={`Switch to ${isDarkTheme ? 'light' : 'dark'} theme`}
-      aria-pressed={!isDarkTheme}
-      onClick={onClick}
-    >
-      <ThemeIcon isDarkTheme={isDarkTheme} />
-      <span className="theme-toggle-text">{isDarkTheme ? 'Dark' : 'Light'}</span>
-    </button>
-  );
-}
+function useBangkokTime() {
+  const [time, setTime] = useState('');
 
-function ThemeIcon({ isDarkTheme }) {
-  if (isDarkTheme) {
-    return (
-      <svg className="theme-toggle-icon" viewBox="0 0 16 16" aria-hidden="true">
-        <path d="M6 .278a.77.77 0 0 1 .08.858 7.2 7.2 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.79.79 0 0 1 .81.316.73.73 0 0 1-.031.893A8.35 8.35 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.75.75 0 0 1 6 .278Z" />
-      </svg>
-    );
-  }
+  useEffect(() => {
+    const format = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit', second: '2-digit',
+    });
+    const update = () => setTime(format.format(new Date()));
+    update();
+    const timer = window.setInterval(update, 1000);
+    return () => window.clearInterval(timer);
+  }, []);
 
-  return (
-    <svg className="theme-toggle-icon" viewBox="0 0 16 16" aria-hidden="true">
-      <path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
-      <path d="M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0Zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13Zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5ZM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8Zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.414a.5.5 0 1 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0Zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0Zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707ZM4.464 4.464a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707Z" />
-    </svg>
-  );
-}
-
-function getInitialTheme() {
-  const savedTheme = localStorage.getItem('theme');
-
-  if (savedTheme === 'dark' || savedTheme === 'light') {
-    return savedTheme;
-  }
-
-  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  return time;
 }
